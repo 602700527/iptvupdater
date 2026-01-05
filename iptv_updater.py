@@ -9,7 +9,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 new_file_path = os.path.join(script_dir, 'new.m3u')
 
 # 延迟阈值（秒），超过这个值的链接会被过滤
-MAX_LATENCY_THRESHOLD = 5.0
+MAX_LATENCY_THRESHOLD = 10.0
 
 # 清空旧数据
 with open(new_file_path, 'w') as file:
@@ -264,5 +264,11 @@ for page in pages:
     # 处理页面
     process_page(page)
 
-
+# 在new.m3u文件的头部添加指定行
+with open(os.path.join(script_dir, 'new.m3u'), 'r+') as new_m3u:
+    content = new_m3u.read()
+    new_m3u.seek(0, 0)
+    new_m3u.write("#EXTM3U\n")
+    new_m3u.write(content)
+print("new.m3u文件已更新")
 
