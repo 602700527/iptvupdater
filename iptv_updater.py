@@ -6,14 +6,10 @@ from datetime import datetime
 
 # 获取脚本所在的目录路径
 script_dir = os.path.dirname(os.path.abspath(__file__))
-new_file_path1 = os.path.join(script_dir, 'new.m3u')
-new_file_path2 = os.path.join(script_dir, 'new1.m3u')
+new_file_path = os.path.join(script_dir, 'new.m3u')
 
 # 清空旧数据
-with open(new_file_path1, 'w') as file:
-    pass  # 清空旧数据
-
-with open(new_file_path2, 'w') as file:
+with open(new_file_path, 'w') as file:
     pass  # 清空旧数据
 
 # 解析EXTVLCOPT行获取请求头
@@ -255,5 +251,6 @@ pages = [
 for page in pages:
     # 处理页面
     process_page(page)
+
 
 

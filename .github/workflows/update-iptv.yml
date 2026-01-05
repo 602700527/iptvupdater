@@ -12,6 +12,10 @@ on:
   push:
     branches: [ main ]
 
+# 添加写入权限
+permissions:
+  contents: write
+
 jobs:
   update-iptv:
     runs-on: ubuntu-latest
@@ -43,6 +47,6 @@ jobs:
       
       - name: Commit and push changes
         run: |
-          git add new1.m3u
+          git add new.m3u
           git diff --staged --quiet || git commit -m "Update IPTV M3U files - $(date +'%Y-%m-%d %H:%M:%S')"
           git push
