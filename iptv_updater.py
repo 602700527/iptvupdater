@@ -8,6 +8,9 @@ from datetime import datetime
 script_dir = os.path.dirname(os.path.abspath(__file__))
 new_file_path = os.path.join(script_dir, 'new.m3u')
 
+# 延迟阈值（秒），超过这个值的链接会被过滤
+MAX_LATENCY_THRESHOLD = 5.0
+
 # 清空旧数据
 with open(new_file_path, 'w') as file:
     pass  # 清空旧数据
@@ -64,7 +67,7 @@ def test_link_with_redirect(url, extvlcopt_line=None, max_redirects=10):
     max_redirects: 最大重定向次数
 
     Returns:
-    tuple: (是否有效, 最终URL)
+    tuple: (是否有效, 最终URL, 响应时间秒数)
     """
     try:
         # 解析EXTVLCOPT行获取请求头
@@ -119,7 +122,7 @@ def test_link_with_redirect(url, extvlcopt_line=None, max_redirects=10):
 
             except requests.RequestException as e:
                 print(f"追踪重定向时出错: {e}")
-                return False, current_url
+                return False, current_url, 0
 
         final_url = current_url
 
@@ -133,41 +136,50 @@ def test_link_with_redirect(url, extvlcopt_line=None, max_redirects=10):
             )
 
             if response.status_code == 200:
+                # 获取响应时间
+                response_time = response.elapsed.total_seconds()
+
                 # 读取前1024字节检查是否是M3U8格式
                 content = response.raw.read(1024).decode('utf-8', errors='ignore')
 
                 # 检查是否是M3U8播放列表
                 if '#EXTM3U' in content or '#EXTINF' in content:
-                    print(f"成功获取M3U8播放列表: {final_url}")
-                    return True, final_url
+                    print(f"成功获取M3U8播放列表: {final_url} (响应时间: {response_time:.2f}秒)")
+
+                    # 检查响应时间是否超过阈值
+                    if response_time > MAX_LATENCY_THRESHOLD:
+                        print(f"延迟过高，已过滤: {response_time:.2f}秒 > {MAX_LATENCY_THRESHOLD}秒")
+                        return False, final_url, response_time
+
+                    return True, final_url, response_time
                 else:
                     print(f"内容不是有效的M3U8格式: {final_url}")
-                    return False, final_url
+                    return False, final_url, response_time
             else:
                 print(f"HTTP错误 {response.status_code}: {final_url}")
-                return False, final_url
+                return False, final_url, 0
 
         except requests.RequestException as e:
             print(f"获取M3U8内容时出错: {e}")
-            return False, final_url
+            return False, final_url, 0
 
     except Exception as e:
         print(f"测试链接时发生未知错误: {e}")
-        return False, url
+        return False, url, 0
 
 # 将有效链接写入文件
-def write_valid_link(new_m3u_path, extinf, extvlcopt, link, is_valid):
+def write_valid_link(new_m3u_path, extinf, extvlcopt, link, is_valid, response_time=0):
     if is_valid:
         with open(new_m3u_path, 'a') as new_m3u:
             if extvlcopt:
                 new_m3u.write(extinf + '\n')
                 new_m3u.write(extvlcopt + '\n')
                 new_m3u.write(link + '\n')
-                print(f"有效链接已写入：{link}")
+                print(f"有效链接已写入：{link} (响应时间: {response_time:.2f}秒)")
             else:
                 new_m3u.write(extinf + '\n')
                 new_m3u.write(link + '\n')
-                print(f"有效链接已写入：{link}")
+                print(f"有效链接已写入：{link} (响应时间: {response_time:.2f}秒)")
 
 #提取分组名
 def extract_group_title_and_name(extinf_line):
@@ -233,7 +245,7 @@ def process_page(url):
                 link_data = futures[future]
                 result = future.result()
                 if result[0]:  # 如果链接有效
-                    write_valid_link(new_m3u_path, link_data[0], link_data[1], link_data[-1], True)
+                    write_valid_link(new_m3u_path, link_data[0], link_data[1], link_data[-1], True, result[2])
                 else:
                     print(f"无效链接：{link_data[-1]}")
 
