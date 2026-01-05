@@ -1,9 +1,9 @@
 name: Update IPTV M3U Files
 
 on:
-  # 每天北京时间凌晨2点运行 (UTC时间18:00)
-  schedule:
-    - cron: '0 18 * * *'
+  # 每周一北京时间凌晨2点运行 (UTC时间18:00)
+  schedule: 
+    - cron: '0 18 * * 1'
   
   # 允许手动触发
   workflow_dispatch:

@@ -13,7 +13,7 @@
 ## 文件说明
 
 - `iptv_updater.py` - 主脚本，负责更新 M3U 文件
-- `new1.m3u` - 生成的最终 M3U 播放列表
+- `new.m3u` - 生成的最终 M3U 播放列表
 - `.github/workflows/update-iptv.yml` - GitHub Actions 工作流配置
 
 ## 本地运行
@@ -31,9 +31,3 @@ python iptv_updater.py
 脚本会在每天北京时间凌晨 2:00 自动运行（UTC 时间 18:00）。
 
 你也可以在 GitHub 仓库的 Actions 标签页手动触发运行。
-
-## M3U 数据源
-
-1. https://iptv-org.github.io/iptv/index.country.m3u
-2. https://raw.githubusercontent.com/luongz/Japan-IPTV/main/jp.m3u
-3. https://raw.githubusercontent.com/akkradet/IPTV-THAI/refs/heads/master/FREETV.m3u
